@@ -1,5 +1,5 @@
 package com.example.kayuhan
-import DBOpenHelper
+
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.os.Bundle
@@ -15,8 +15,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     lateinit var binding: ActivityMainBinding
     lateinit var fragmentLokasi: FragmentLokasi
     lateinit var fragmentDashboardAdmin: FragmentDashboardAdmin
-
     lateinit var ft: FragmentTransaction
+
+    lateinit var fragmentMenu: FragmentMenu
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         db = DBOpenHelper(this).writableDatabase
         fragmentLokasi = FragmentLokasi()
         fragmentDashboardAdmin = FragmentDashboardAdmin()
+        fragmentMenu = FragmentMenu()
 
         binding.bottomNavigationView.setOnItemSelectedListener(this)
         binding.bottomNavigationView.itemIconTintList = null
@@ -59,9 +61,12 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 return true
             }
             R.id.itemMenu -> {
-                // Tangani klik Menu
+                ft = supportFragmentManager.beginTransaction()
+                ft.replace(R.id.frameLayout, fragmentMenu).commit()
+                binding.frameLayout.visibility = View.VISIBLE
                 return true
             }
+
             R.id.itemLokasi -> {
                 supportFragmentManager.beginTransaction()
                     .replace(binding.frameLayout.id, fragmentLokasi) // Pastikan ID container sesuai di layout

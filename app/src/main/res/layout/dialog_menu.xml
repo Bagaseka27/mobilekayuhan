@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/etIdMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="ID Menu (contoh: M001)"
+            android:inputType="textCapCharacters" />
+
+        <EditText
+            android:id="@+id/etNamaMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nama Menu"
+            android:inputType="textCapWords" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kategori"
+            android:layout_marginTop="8dp" />
+
+        <Spinner
+            android:id="@+id/spKategori"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/etHargaDasar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Harga Dasar"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/etHargaJual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Harga Jual"
+            android:inputType="number" />
+
+    </LinearLayout>
+</ScrollView>

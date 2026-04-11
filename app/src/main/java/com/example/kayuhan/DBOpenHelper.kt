@@ -1,3 +1,5 @@
+package com.example.kayuhan
+
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -31,6 +33,7 @@ class DBOpenHelper(context: Context) :
         val tMenu = "create table menu(" +
                 "id_produk text primary key, " +
                 "nama_produk text not null, " +
+                "kategori text not null, " +
                 "harga_dasar integer not null, " +
                 "harga_jual integer not null)"
 
@@ -64,10 +67,15 @@ class DBOpenHelper(context: Context) :
         oldVersion: Int,
         newVersion: Int
     ) {
-//digunakan untuk update struktur tabel
+        db?.execSQL("DROP TABLE IF EXISTS karyawan")
+        db?.execSQL("DROP TABLE IF EXISTS jabatan")
+        db?.execSQL("DROP TABLE IF EXISTS gaji")
+        db?.execSQL("DROP TABLE IF EXISTS menu")
+        db?.execSQL("DROP TABLE IF EXISTS transaksi")
+        onCreate(db)
     }
     companion object {
         val DB_Name = "kayuhanmobile"
-        val DB_Ver = 1 // versi database
+        val DB_Ver = 2 // Update version to trigger onUpgrade
     }
 }
