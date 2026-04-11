@@ -48,7 +48,8 @@ class FragmentDashboardAdmin : Fragment() {
         cKaryawan.close()
 
         // 2. Hitung Total Gaji (dari tabel jabatan)
-        val cGaji: Cursor = db.rawQuery("SELECT SUM(gaji_pokok_per_hari) FROM jabatan", null)
+        val cGaji: Cursor = db.rawQuery("SELECT SUM(gaji_pokok_per_hari) FROM karyawan k, jabatan j WHERE k.id_jabatan = j.id_jabatan", null)
+
         if (cGaji.moveToFirst()) {
             binding.tvTotalGaji.text = formatKeRupiah(cGaji.getDouble(0))
         }
