@@ -1,4 +1,5 @@
 package com.example.kayuhan
+
 import DBOpenHelper
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
@@ -11,10 +12,13 @@ import com.example.kayuhan.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationBarView
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+
     lateinit var db: SQLiteDatabase
     lateinit var binding: ActivityMainBinding
+
     lateinit var fragmentLokasi: FragmentLokasi
     lateinit var fragmentDashboardAdmin: FragmentDashboardAdmin
+    lateinit var fragmentTransaksi: FragmentTransaksi
 
     lateinit var ft: FragmentTransaction
 
@@ -24,27 +28,29 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         setContentView(binding.root)
 
         db = DBOpenHelper(this).writableDatabase
+
         fragmentLokasi = FragmentLokasi()
         fragmentDashboardAdmin = FragmentDashboardAdmin()
+        fragmentTransaksi = FragmentTransaksi()
 
         binding.bottomNavigationView.setOnItemSelectedListener(this)
         binding.bottomNavigationView.itemIconTintList = null
 
         if (savedInstanceState == null){
             supportFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, fragmentDashboardAdmin).commit()
+                .replace(R.id.frameLayout, fragmentDashboardAdmin)
+                .commit()
         }
-
     }
 
-    //memberikan akses database ke class lain
+    // akses database
     fun getDbObject() : SQLiteDatabase{
         return db
     }
 
-
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+
             R.id.itemBeranda -> {
                 ft = supportFragmentManager.beginTransaction()
                 ft.replace(R.id.frameLayout, fragmentDashboardAdmin).commit()
@@ -54,18 +60,24 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 binding.frameLayout.visibility = View.VISIBLE
                 return true
             }
+
+            R.id.itemTransaksi -> {
+                ft = supportFragmentManager.beginTransaction()
+                ft.replace(R.id.frameLayout, fragmentTransaksi).commit()
+                return true
+            }
+
             R.id.itemKaryawan -> {
-                // Tangani klik Karyawan
                 return true
             }
+
             R.id.itemMenu -> {
-                // Tangani klik Menu
                 return true
             }
+
             R.id.itemLokasi -> {
-                supportFragmentManager.beginTransaction()
-                    .replace(binding.frameLayout.id, fragmentLokasi) // Pastikan ID container sesuai di layout
-                    .commit()
+                ft = supportFragmentManager.beginTransaction()
+                ft.replace(R.id.frameLayout, fragmentLokasi).commit()
                 return true
             }
         }

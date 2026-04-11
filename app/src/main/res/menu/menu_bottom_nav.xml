@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:title="Beranda"
         android:id="@+id/itemBeranda"
         android:icon="@drawable/home"
         app:showAsAction="always"/>
+
     <item
         android:title="Karyawan"
         android:id="@+id/itemKaryawan"
-        app:showAsAction="always"
-        android:icon="@drawable/group"/>
+        android:icon="@drawable/group"
+        app:showAsAction="always"/>
+
     <item
         android:title="Menu"
         android:id="@+id/itemMenu"
         android:icon="@drawable/coffee"
         app:showAsAction="always"/>
+
     <item
         android:title="Lokasi"
         android:id="@+id/itemLokasi"
         android:icon="@drawable/location"
-        app:showAsAction="always" />
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/itemTransaksi"
+        android:title="Transaksi"
+        android:icon="@drawable/transaksi"
+        app:showAsAction="always"/>
+
 </menu>
