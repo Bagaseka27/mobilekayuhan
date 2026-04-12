@@ -46,20 +46,38 @@ class DBOpenHelper(context: Context) :
                 "total_bayar integer not null, " +
                 "metode_pembayaran text not null)"
 
+        val tCabang = "create table cabang(" +
+                "id_cabang text primary key, " +
+                "nama_lokasi text not null)"
 
+        val tRombong = "create table rombong(" +
+                "id_rombong text primary key, " +
+                "id_cabang text not null, " +
+                "foreign key (id_cabang) references cabang(id_cabang))"
 
         val insJabatan = "insert into jabatan(id_jabatan, nama_jabatan, gaji_pokok_per_hari, bonus_percup) " +
                 "values(1, 'Admin', 45000, 0), " +
                 "(2, 'Senior', 40000, 1000), " +
                 "(3, 'Junior', 35000, 500), " +
                 "(4, 'Trainer', 30000, 0)"
+
+        val insCabang = "insert into cabang(id_cabang, nama_lokasi) " +
+                "values('CBG-KAY01', 'Sekartaji-Tomoro')"
+
+        val insRombong = "insert into rombong(id_rombong, id_cabang) " +
+                "values('RM-01', 'CBG-KAY01')"
+
 //eksekusi query
         db?.execSQL(tKaryawan)
         db?.execSQL(tJabatan)
         db?.execSQL(tGaji)
         db?.execSQL(tMenu)
         db?.execSQL(tTransaksi)
+        db?.execSQL(tCabang)
+        db?.execSQL(tRombong)
         db?.execSQL(insJabatan)
+        db?.execSQL(insCabang)
+        db?.execSQL(insRombong)
     }
     //fungsi berjalan saat versi database diubah
     override fun onUpgrade(
@@ -72,10 +90,12 @@ class DBOpenHelper(context: Context) :
         db?.execSQL("DROP TABLE IF EXISTS gaji")
         db?.execSQL("DROP TABLE IF EXISTS menu")
         db?.execSQL("DROP TABLE IF EXISTS transaksi")
+        db?.execSQL("DROP TABLE IF EXISTS cabang")
+        db?.execSQL("DROP TABLE IF EXISTS rombong")
         onCreate(db)
     }
     companion object {
         val DB_Name = "kayuhanmobile"
-        val DB_Ver = 2 // Update version to trigger onUpgrade
+        val DB_Ver = 3 // Update version to trigger onUpgrade
     }
 }
