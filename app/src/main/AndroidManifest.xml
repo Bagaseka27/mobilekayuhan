@@ -12,54 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kayuhan">
         <activity
-            android:name=".tab_jadwal_shift"
-            android:exported="false" />
-        <activity
-            android:name=".dialog_kelola_jabatan"
-            android:exported="false" />
-        <activity
-            android:name=".dialog_buat_jadwal"
-            android:exported="false" />
-        <activity
-            android:name=".dialog_kelola_gaji"
-            android:exported="false" />
-        <activity
-            android:name=".item_jabatan"
-            android:exported="false" />
-        <activity
-            android:name=".ItemJadwalActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ItemGajiActivity"
-            android:exported="false" />
-        <activity
-            android:name=".TabJabatanActivity"
-            android:exported="false" />
-        <activity
-            android:name=".TabDataShiftActivity"
-            android:exported="false" />
-        <activity
-            android:name=".tab_data_gaji"
-            android:exported="false" />
-        <activity
-            android:name=".tab_data_karyawan"
-            android:exported="false" />
-        <activity
-            android:name=".DialogKelolaKaryawanActivity"
-            android:exported="false" />
-        <activity
-            android:name=".item_karyawan_barista"
-            android:exported="false" />
-        <activity
-            android:name=".item_karyawan_admin"
-            android:exported="false" />
-        <activity
-            android:name=".FragmentKaryawan"
-            android:exported="false" />
-        <activity
-            android:name=".item_karyawan"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
