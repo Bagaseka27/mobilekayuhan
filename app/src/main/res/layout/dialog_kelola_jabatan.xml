@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:background="#1B5E3B" android:padding="16dp">
+        <TextView
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Kelola Jabatan" android:textColor="#FFFFFF"
+            android:textSize="15sp" android:textStyle="bold"
+            android:layout_centerVertical="true" />
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="#FFFFFF"
+            android:layout_alignParentEnd="true" android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+
+        <!-- Nama Jabatan -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Nama Jabatan" android:textColor="#444" android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginBottom="12dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNamaJabatan"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="textCapWords" android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Gaji Pokok/Hari -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Gaji Pokok / Hari (Rp)" android:textColor="#444" android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginBottom="12dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etGajiPokok"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="numberDecimal" android:textSize="13sp"
+                android:hint="0" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Bonus/Cup -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Bonus / Cup (Rp)" android:textColor="#444" android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginBottom="16dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBonusCup"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="numberDecimal" android:textSize="13sp"
+                android:hint="0" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSimpan"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Simpan" android:textColor="#FFFFFF"
+            android:backgroundTint="#1B5E3B" app:cornerRadius="8dp"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
+</LinearLayout>

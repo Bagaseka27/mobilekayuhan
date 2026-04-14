@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp"
+    android:paddingHorizontal="4dp"
+    android:gravity="center_vertical">
+
+    <TextView android:id="@+id/tvId"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="0.6"
+        android:textColor="#333" android:textSize="11sp" />
+
+    <TextView android:id="@+id/tvNamaJabatan"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1.5"
+        android:textColor="#333" android:textSize="11sp" />
+
+    <TextView android:id="@+id/tvGajiHari"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1.2"
+        android:textColor="#333" android:textSize="11sp" />
+
+    <TextView android:id="@+id/tvBonusCup"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#333" android:textSize="11sp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:text="Edit"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FFA726"
+            app:cornerRadius="4dp"
+            android:minWidth="0dp" android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:layout_marginBottom="3dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnHapus"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:text="Hapus"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#E53935"
+            app:cornerRadius="4dp"
+            android:minWidth="0dp" android:minHeight="0dp"
+            android:paddingHorizontal="10dp" />
+    </LinearLayout>
+
+</LinearLayout>

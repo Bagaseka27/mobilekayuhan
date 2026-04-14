@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5E8"
+    android:padding="16dp">
+
+    <!-- Button Buat Jadwal (kanan atas) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:layout_marginBottom="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBuatJadwal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Buat Jadwal"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:backgroundTint="#1B5E3B"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconTint="#FFFFFF"
+            app:iconSize="14dp" />
+    </LinearLayout>
+
+    <!-- Table Jadwal -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- Header -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="4dp">
+
+                        <TextView android:layout_width="60dp" android:layout_height="wrap_content"
+                            android:text="ID" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="110dp" android:layout_height="wrap_content"
+                            android:text="KARYAWAN" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="100dp" android:layout_height="wrap_content"
+                            android:text="LOKASI/CABANG" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="90dp" android:layout_height="wrap_content"
+                            android:text="TANGGAL" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="110dp" android:layout_height="wrap_content"
+                            android:text="JAM" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="80dp" android:layout_height="wrap_content"
+                            android:text="AKSI" android:textColor="#555" android:textSize="10sp" android:textStyle="bold"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvJadwal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

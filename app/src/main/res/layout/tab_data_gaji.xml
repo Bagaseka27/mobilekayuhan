@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5E8"
+    android:padding="16dp">
+
+    <!-- Row: Periode + Tambah Gaji -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Periode: "
+                android:textColor="#1B5E3B"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="#1B5E3B"
+                app:boxStrokeWidth="1dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPeriodeFilter"
+                    android:layout_width="120dp"
+                    android:layout_height="40dp"
+                    android:hint="Pilih Bulan"
+                    android:textSize="12sp"
+                    android:paddingHorizontal="8dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTambahGaji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tambah Data Gaji"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:backgroundTint="#1B5E3B"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconTint="#FFFFFF"
+            app:iconSize="14dp" />
+    </LinearLayout>
+
+    <!-- Table Gaji -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- Header -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="4dp">
+
+                        <TextView android:layout_width="40dp" android:layout_height="wrap_content"
+                            android:text="NO" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="110dp" android:layout_height="wrap_content"
+                            android:text="NAMA" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="90dp" android:layout_height="wrap_content"
+                            android:text="PERIODE" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="90dp" android:layout_height="wrap_content"
+                            android:text="GAJI POKOK" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="70dp" android:layout_height="wrap_content"
+                            android:text="BONUS" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="90dp" android:layout_height="wrap_content"
+                            android:text="KOMPENSASI" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="90dp" android:layout_height="wrap_content"
+                            android:text="TOTAL GAJI" android:textColor="#555" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:layout_width="80dp" android:layout_height="wrap_content"
+                            android:text="AKSI" android:textColor="#555" android:textSize="10sp" android:textStyle="bold"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvGaji"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

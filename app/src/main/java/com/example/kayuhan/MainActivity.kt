@@ -14,14 +14,13 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     lateinit var db: SQLiteDatabase
     lateinit var binding: ActivityMainBinding
-
     lateinit var fragmentLokasi: FragmentLokasi
     lateinit var fragmentDashboardAdmin: FragmentDashboardAdmin
     lateinit var fragmentTransaksi: FragmentTransaksi
-    
-    lateinit var ft: FragmentTransaction
-
     lateinit var fragmentMenu: FragmentMenu
+    lateinit var fragmentKaryawan: FragmentKaryawan
+
+    lateinit var ft: FragmentTransaction
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,58 +31,51 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
         fragmentLokasi = FragmentLokasi()
         fragmentDashboardAdmin = FragmentDashboardAdmin()
-
         fragmentMenu = FragmentMenu()
-
         fragmentTransaksi = FragmentTransaksi()
-
+        fragmentKaryawan = FragmentKaryawan()
 
         binding.bottomNavigationView.setOnItemSelectedListener(this)
         binding.bottomNavigationView.itemIconTintList = null
 
-        if (savedInstanceState == null){
+        if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.frameLayout, fragmentDashboardAdmin)
                 .commit()
         }
     }
 
-    // akses database
-    fun getDbObject() : SQLiteDatabase{
+    fun getDbObject(): SQLiteDatabase {
         return db
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-
             R.id.itemBeranda -> {
                 ft = supportFragmentManager.beginTransaction()
                 ft.replace(R.id.frameLayout, fragmentDashboardAdmin).commit()
-                binding.frameLayout.setBackgroundColor(
-                    Color.argb(245, 255, 255, 225)
-                )
+                binding.frameLayout.setBackgroundColor(Color.argb(245, 255, 255, 225))
                 binding.frameLayout.visibility = View.VISIBLE
                 return true
             }
-
             R.id.itemTransaksi -> {
                 ft = supportFragmentManager.beginTransaction()
                 ft.replace(R.id.frameLayout, fragmentTransaksi).commit()
                 return true
             }
-
             R.id.itemKaryawan -> {
+                ft = supportFragmentManager.beginTransaction()
+                ft.replace(R.id.frameLayout, fragmentKaryawan).commit()
+                binding.frameLayout.setBackgroundColor(Color.argb(245, 245, 245, 232))
+                binding.frameLayout.visibility = View.VISIBLE
                 return true
             }
-
             R.id.itemMenu -> {
                 ft = supportFragmentManager.beginTransaction()
                 ft.replace(R.id.frameLayout, fragmentMenu).commit()
                 binding.frameLayout.visibility = View.VISIBLE
-
                 return true
             }
-
             R.id.itemLokasi -> {
                 ft = supportFragmentManager.beginTransaction()
                 ft.replace(R.id.frameLayout, fragmentLokasi).commit()
