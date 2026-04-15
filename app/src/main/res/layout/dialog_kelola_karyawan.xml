@@ -100,21 +100,31 @@
                     android:inputType="textPassword" android:textSize="13sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Role -->
+            <!-- Role (Barista / Admin) -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Role" android:textColor="#444" android:textSize="12sp"
                 android:layout_marginBottom="4dp" />
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <RadioGroup
+                android:id="@+id/rgRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:layout_marginBottom="12dp">
-                <AutoCompleteTextView
-                    android:id="@+id/spinnerRole"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="Barista" android:textSize="13sp"
-                    android:focusable="false" android:focusableInTouchMode="false"
-                    android:padding="14dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                <RadioButton
+                    android:id="@+id/rbBarista"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Barista"
+                    android:checked="true"
+                    android:textSize="13sp" />
+                <RadioButton
+                    android:id="@+id/rbAdmin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Admin"
+                    android:layout_marginStart="16dp"
+                    android:textSize="13sp" />
+            </RadioGroup>
 
             <!-- ID Jabatan -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -132,37 +142,45 @@
                     android:padding="14dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ID Cabang -->
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="ID Cabang" android:textColor="#444" android:textSize="12sp"
-                android:layout_marginBottom="4dp" />
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_marginBottom="12dp">
-                <AutoCompleteTextView
-                    android:id="@+id/spinnerCabang"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="-" android:textSize="13sp"
-                    android:focusable="false" android:focusableInTouchMode="false"
-                    android:padding="14dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+            <!-- Lokasi Section (Hanya untuk Barista) -->
+            <LinearLayout
+                android:id="@+id/layoutLokasi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-            <!-- ID Rombong -->
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="ID Rombong" android:textColor="#444" android:textSize="12sp"
-                android:layout_marginBottom="4dp" />
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_marginBottom="16dp">
-                <AutoCompleteTextView
-                    android:id="@+id/spinnerRombong"
+                <!-- ID Cabang -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="ID Cabang" android:textColor="#444" android:textSize="12sp"
+                    android:layout_marginBottom="4dp" />
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="-" android:textSize="13sp"
-                    android:focusable="false" android:focusableInTouchMode="false"
-                    android:padding="14dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_marginBottom="12dp">
+                    <AutoCompleteTextView
+                        android:id="@+id/spinnerCabang"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="-" android:textSize="13sp"
+                        android:focusable="false" android:focusableInTouchMode="false"
+                        android:padding="14dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- ID Rombong -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="ID Rombong" android:textColor="#444" android:textSize="12sp"
+                    android:layout_marginBottom="4dp" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_marginBottom="16dp">
+                    <AutoCompleteTextView
+                        android:id="@+id/spinnerRombong"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="-" android:textSize="13sp"
+                        android:focusable="false" android:focusableInTouchMode="false"
+                        android:padding="14dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
 
             <!-- Simpan Button -->
             <com.google.android.material.button.MaterialButton

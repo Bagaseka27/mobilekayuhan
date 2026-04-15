@@ -33,8 +33,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Dari"
+                android:hint="Dari (YYYY-MM-DD)"
+                android:inputType="date"
                 android:padding="10dp"
+                android:drawableEnd="@android:drawable/ic_menu_today"
                 android:background="@android:drawable/edit_text"/>
 
             <EditText
@@ -42,9 +44,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Sampai"
+                android:hint="Sampai (YYYY-MM-DD)"
+                android:inputType="date"
                 android:layout_marginStart="8dp"
                 android:padding="10dp"
+                android:drawableEnd="@android:drawable/ic_menu_today"
                 android:background="@android:drawable/edit_text"/>
         </LinearLayout>
 

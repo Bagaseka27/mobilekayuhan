@@ -55,6 +55,14 @@ class DBOpenHelper(context: Context) :
                 "id_cabang text not null, " +
                 "foreign key (id_cabang) references cabang(id_cabang))"
 
+        val tJadwal = "create table jadwal_shift(" +
+                "id_jadwal integer primary key autoincrement, " +
+                "email text not null, " +
+                "tanggal text not null, " +
+                "jam_mulai text not null, " +
+                "jam_selesai text not null, " +
+                "foreign key (email) references karyawan(email))"
+
         val insJabatan = "insert into jabatan(id_jabatan, nama_jabatan, gaji_pokok_per_hari, bonus_percup) " +
                 "values(1, 'Admin', 45000, 0), " +
                 "(2, 'Senior', 40000, 1000), " +
@@ -75,6 +83,7 @@ class DBOpenHelper(context: Context) :
         db?.execSQL(tTransaksi)
         db?.execSQL(tCabang)
         db?.execSQL(tRombong)
+        db?.execSQL(tJadwal)
         db?.execSQL(insJabatan)
         db?.execSQL(insCabang)
         db?.execSQL(insRombong)
@@ -92,10 +101,11 @@ class DBOpenHelper(context: Context) :
         db?.execSQL("DROP TABLE IF EXISTS transaksi")
         db?.execSQL("DROP TABLE IF EXISTS cabang")
         db?.execSQL("DROP TABLE IF EXISTS rombong")
+        db?.execSQL("DROP TABLE IF EXISTS jadwal_shift")
         onCreate(db)
     }
     companion object {
         val DB_Name = "kayuhanmobile"
-        val DB_Ver = 3 // Update version to trigger onUpgrade
+        val DB_Ver = 4 // Update version
     }
 }

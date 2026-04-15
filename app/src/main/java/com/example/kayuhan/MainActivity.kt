@@ -1,26 +1,17 @@
 package com.example.kayuhan
 
 import android.database.sqlite.SQLiteDatabase
-import android.graphics.Color
 import android.os.Bundle
-import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.example.kayuhan.databinding.ActivityMainBinding
-import com.google.android.material.navigation.NavigationBarView
 
-class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+class MainActivity : AppCompatActivity() {
 
     lateinit var db: SQLiteDatabase
     lateinit var binding: ActivityMainBinding
-    lateinit var fragmentLokasi: FragmentLokasi
-    lateinit var fragmentDashboardAdmin: FragmentDashboardAdmin
-    lateinit var fragmentTransaksi: FragmentTransaksi
-    lateinit var fragmentMenu: FragmentMenu
-    lateinit var fragmentKaryawan: FragmentKaryawan
-
-    lateinit var ft: FragmentTransaction
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,59 +20,44 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
         db = DBOpenHelper(this).writableDatabase
 
-        fragmentLokasi = FragmentLokasi()
-        fragmentDashboardAdmin = FragmentDashboardAdmin()
-        fragmentMenu = FragmentMenu()
-        fragmentTransaksi = FragmentTransaksi()
-        fragmentKaryawan = FragmentKaryawan()
+        val adapter = MainPagerAdapter(this)
+        binding.viewPagerMain.adapter = adapter
+        
+        // Agar ViewPager berpindah saat BottomNav diklik
+        binding.bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.itemBeranda -> binding.viewPagerMain.currentItem = 0
+                R.id.itemTransaksi -> binding.viewPagerMain.currentItem = 1
+                R.id.itemKaryawan -> binding.viewPagerMain.currentItem = 2
+                R.id.itemMenu -> binding.viewPagerMain.currentItem = 3
+                R.id.itemLokasi -> binding.viewPagerMain.currentItem = 4
+            }
+            true
+        }
 
-        binding.bottomNavigationView.setOnItemSelectedListener(this)
+        // Agar BottomNav berpindah saat ViewPager di-slide
+        binding.viewPagerMain.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                binding.bottomNavigationView.menu.getItem(position).isChecked = true
+            }
+        })
+
         binding.bottomNavigationView.itemIconTintList = null
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, fragmentDashboardAdmin)
-                .commit()
-        }
     }
 
-    fun getDbObject(): SQLiteDatabase {
-        return db
-    }
+    fun getDbObject(): SQLiteDatabase = db
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.itemBeranda -> {
-                ft = supportFragmentManager.beginTransaction()
-                ft.replace(R.id.frameLayout, fragmentDashboardAdmin).commit()
-                binding.frameLayout.setBackgroundColor(Color.argb(245, 255, 255, 225))
-                binding.frameLayout.visibility = View.VISIBLE
-                return true
-            }
-            R.id.itemTransaksi -> {
-                ft = supportFragmentManager.beginTransaction()
-                ft.replace(R.id.frameLayout, fragmentTransaksi).commit()
-                return true
-            }
-            R.id.itemKaryawan -> {
-                ft = supportFragmentManager.beginTransaction()
-                ft.replace(R.id.frameLayout, fragmentKaryawan).commit()
-                binding.frameLayout.setBackgroundColor(Color.argb(245, 245, 245, 232))
-                binding.frameLayout.visibility = View.VISIBLE
-                return true
-            }
-            R.id.itemMenu -> {
-                ft = supportFragmentManager.beginTransaction()
-                ft.replace(R.id.frameLayout, fragmentMenu).commit()
-                binding.frameLayout.visibility = View.VISIBLE
-                return true
-            }
-            R.id.itemLokasi -> {
-                ft = supportFragmentManager.beginTransaction()
-                ft.replace(R.id.frameLayout, fragmentLokasi).commit()
-                return true
+    inner class MainPagerAdapter(fa: AppCompatActivity) : FragmentStateAdapter(fa) {
+        override fun getItemCount(): Int = 5
+        override fun createFragment(position: Int): Fragment {
+            return when (position) {
+                0 -> FragmentDashboardAdmin()
+                1 -> FragmentTransaksi()
+                2 -> FragmentKaryawan()
+                3 -> FragmentMenu()
+                4 -> FragmentLokasi()
+                else -> FragmentDashboardAdmin()
             }
         }
-        return false
     }
 }
