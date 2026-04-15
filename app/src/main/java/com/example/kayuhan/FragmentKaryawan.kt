@@ -1,12 +1,11 @@
 package com.example.kayuhan
 
 import android.app.AlertDialog
-import android.app.DatePickerDialog
 import android.app.Dialog
-import android.app.TimePickerDialog
 import android.content.ContentValues
 import android.os.Bundle
-import java.util.*
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,8 +18,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.kayuhan.databinding.*
 import com.google.android.material.tabs.TabLayoutMediator
+import java.util.Calendar
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 
-// ─── DATA CLASSES ──────────────────────────────────────────────────────────
+// ─── DATA MODELS ───────────────────────────────────────────────────────────
 
 data class Karyawan(
     val email: String, val idJabatan: Int, val idRombong: String,
@@ -30,16 +32,16 @@ data class Karyawan(
 data class Jabatan(val id: Int, val nama: String, val gaji: Long, val bonus: Long)
 
 data class DataGaji(
-    val idGaji: String, val nama: String, val periode: String,
+    val idGaji: String, val email: String, val nama: String, val periode: String,
     val gajiPokok: Long, val bonus: Long, val kompensasi: Long, val total: Long
 )
 
 data class JadwalShift(
     val idJadwal: Int, val email: String, val nama: String,
-    val tanggal: String, val jamMulai: String, val jamSelesai: String
+    val tanggal: String, val jamMulai: String, val jamSelesai: String, val lokasi: String
 )
 
-// ─── MAIN FRAGMENT (CONTAINER) ─────────────────────────────────────────────
+// ─── MAIN CONTAINER ────────────────────────────────────────────────────────
 
 class FragmentKaryawan : Fragment() {
     private var _binding: ActivityFragmentKaryawanBinding? = null
@@ -57,9 +59,18 @@ class FragmentKaryawan : Fragment() {
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, pos ->
             tab.text = when (pos) {
-                0 -> "Data Karyawan"; 1 -> "Data Gaji"; 2 -> "Jadwal Shift"; 3 -> "Jabatan"; else -> ""
+                0 -> "Karyawan"
+                1 -> "Gaji"
+                2 -> "Jadwal"
+                3 -> "Jabatan"
+                else -> null
             }
         }.attach()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 
@@ -74,14 +85,12 @@ class KaryawanPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     }
 }
 
-// ─── TAB 1: DATA KARYAWAN ──────────────────────────────────────────────────
+// ─── TAB 1: MANAJEMEN KARYAWAN ─────────────────────────────────────────────
 
 class TabDataKaryawanFragment : Fragment() {
     private var _binding: TabDataKaryawanBinding? = null
     private val binding get() = _binding!!
     private lateinit var db: DBOpenHelper
-    private val listBarista = mutableListOf<Karyawan>()
-    private lateinit var adapter: KaryawanAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = TabDataKaryawanBinding.inflate(inflater, container, false)
@@ -91,177 +100,160 @@ class TabDataKaryawanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = KaryawanAdapter(listBarista)
-        binding.rvKaryawanBarista.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvKaryawanBarista.adapter = adapter
-
+        binding.rvKaryawanAdmin.layoutManager = LinearLayoutManager(context)
+        binding.rvKaryawanBarista.layoutManager = LinearLayoutManager(context)
         loadData()
         binding.btnTambahKaryawan.setOnClickListener { showKaryawanDialog(null) }
     }
 
     private fun loadData() {
-        listBarista.clear()
-        // PERBAIKAN: Admin sekarang muncul (Filter posisi != 'Admin' dihapus)
-        val cursor = db.readableDatabase.rawQuery("SELECT * FROM karyawan", null)
+        val listAll = mutableListOf<Map<String, String>>()
+        // Query JOIN untuk mengambil Nama Cabang melalui Rombong
+        val query = """
+            SELECT k.email, k.nama, k.no_hp, k.id_rombong, k.posisi, c.nama_lokasi, k.id_jabatan
+            FROM karyawan k
+            LEFT JOIN rombong r ON k.id_rombong = r.id_rombong
+            LEFT JOIN cabang c ON r.id_cabang = c.id_cabang
+        """.trimIndent()
+
+        val cursor = db.readableDatabase.rawQuery(query, null)
         while (cursor.moveToNext()) {
-            listBarista.add(Karyawan(cursor.getString(0), cursor.getInt(1), cursor.getString(2),
-                cursor.getString(3), cursor.getString(4), cursor.getString(5)))
+            listAll.add(mapOf(
+                "email" to cursor.getString(0),
+                "nama" to cursor.getString(1),
+                "no_hp" to cursor.getString(2),
+                "id_rombong" to (cursor.getString(3) ?: "-"),
+                "posisi" to cursor.getString(4),
+                "cabang" to (cursor.getString(5) ?: "-"),
+                "id_jabatan" to cursor.getInt(6).toString()
+            ))
         }
         cursor.close()
-        adapter.notifyDataSetChanged()
+
+        // Filter List
+        val adminList = listAll.filter { it["posisi"] == "Admin" }
+        val baristaList = listAll.filter { it["posisi"] == "Barista" }
+
+        binding.rvKaryawanAdmin.adapter = KaryawanAdapter(adminList)
+        binding.rvKaryawanBarista.adapter = KaryawanAdapter(baristaList)
     }
 
     private fun showKaryawanDialog(item: Karyawan?) {
-        val dialog = Dialog(requireContext())
         val d = DialogKelolaKaryawanBinding.inflate(layoutInflater)
+        val dialog = Dialog(requireContext())
         dialog.setContentView(d.root)
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        // 1. Spinner Jabatan
-        val jabNames = mutableListOf<String>()
-        val jabIds = mutableListOf<Int>()
+        // Setup Spinner Jabatan
+        val jabNames = mutableListOf<String>(); val jabIds = mutableListOf<Int>()
         val curJab = db.readableDatabase.rawQuery("SELECT id_jabatan, nama_jabatan FROM jabatan", null)
-        while(curJab.moveToNext()){
-            jabIds.add(curJab.getInt(0))
-            jabNames.add(curJab.getString(1))
-        }
+        while(curJab.moveToNext()){ jabIds.add(curJab.getInt(0)); jabNames.add(curJab.getString(1)) }
         curJab.close()
         d.spinnerJabatan.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, jabNames))
 
-        // 2. Role Logic (RadioGroup)
+        // Visibility Rombong & Cabang
         d.rgRole.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == d.rbAdmin.id) {
-                d.layoutLokasi.visibility = View.GONE
-            } else {
-                d.layoutLokasi.visibility = View.VISIBLE
-            }
+            d.layoutLokasi.visibility = if (checkedId == d.rbAdmin.id) View.GONE else View.VISIBLE
         }
 
-        // 3. Spinner Cabang
-        val cabNames = mutableListOf<String>()
-        val cabIds = mutableListOf<String>()
+        // Setup Spinner Cabang & Rombong
+        val cabIds = mutableListOf<String>(); val cabNames = mutableListOf<String>()
         val curCab = db.readableDatabase.rawQuery("SELECT id_cabang, nama_lokasi FROM cabang", null)
-        while(curCab.moveToNext()){
-            cabIds.add(curCab.getString(0))
-            cabNames.add("${curCab.getString(0)} - ${curCab.getString(1)}")
-        }
+        while(curCab.moveToNext()){ cabIds.add(curCab.getString(0)); cabNames.add(curCab.getString(1)) }
         curCab.close()
         d.spinnerCabang.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, cabNames))
 
-        // 4. Spinner Rombong
-        fun loadRombong(idCabang: String? = null) {
+        d.spinnerCabang.setOnItemClickListener { _, _, position, _ ->
             val romList = mutableListOf<String>()
-            val query = if(idCabang == null) "SELECT id_rombong FROM rombong"
-            else "SELECT id_rombong FROM rombong WHERE id_cabang = '$idCabang'"
-            val curR = db.readableDatabase.rawQuery(query, null)
+            val curR = db.readableDatabase.rawQuery("SELECT id_rombong FROM rombong WHERE id_cabang = ?", arrayOf(cabIds[position]))
             while(curR.moveToNext()) romList.add(curR.getString(0))
             curR.close()
             d.spinnerRombong.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, romList))
-            if(romList.isNotEmpty()) d.spinnerRombong.setText(romList[0], false)
-            else d.spinnerRombong.setText("", false)
         }
 
-        d.spinnerCabang.setOnItemClickListener { _, _, position, _ ->
-            loadRombong(cabIds[position])
-        }
-
+        // Edit Mode
         item?.let {
             d.etEmail.setText(it.email); d.etEmail.isEnabled = false
             d.etNamaLengkap.setText(it.nama)
             d.etNoHp.setText(it.noHp)
-            
-            if(it.posisi == "Admin") {
-                d.rbAdmin.isChecked = true
-                d.layoutLokasi.visibility = View.GONE
-            } else {
-                d.rbBarista.isChecked = true
-                d.layoutLokasi.visibility = View.VISIBLE
-            }
-
-            // Set Jabatan
+            if (it.posisi == "Admin") d.rbAdmin.isChecked = true else d.rbBarista.isChecked = true
             val jIdx = jabIds.indexOf(it.idJabatan)
-            if(jIdx != -1) d.spinnerJabatan.setText(jabNames[jIdx], false)
-
-            // Set Cabang and Rombong
-            val cur = db.readableDatabase.rawQuery("SELECT id_cabang FROM rombong WHERE id_rombong = ?", arrayOf(it.idRombong))
-            if(cur.moveToFirst()){
-                val idC = cur.getString(0)
-                val idx = cabIds.indexOf(idC)
-                if(idx != -1) {
-                    d.spinnerCabang.setText(cabNames[idx], false)
-                    loadRombong(idC)
-                    d.spinnerRombong.setText(it.idRombong, false)
-                }
-            }
-            cur.close()
-        } ?: run {
-            if(jabNames.isNotEmpty()) d.spinnerJabatan.setText(jabNames[0], false)
-            if(cabNames.isNotEmpty()) {
-                d.spinnerCabang.setText(cabNames[0], false)
-                loadRombong(cabIds[0])
-            } else {
-                loadRombong()
-            }
+            if (jIdx != -1) d.spinnerJabatan.setText(jabNames[jIdx], false)
+            d.spinnerRombong.setText(it.idRombong, false)
         }
 
         d.btnSimpan.setOnClickListener {
-            val email = d.etEmail.text?.toString() ?: ""
-            val nama = d.etNamaLengkap.text?.toString() ?: ""
-            val noHp = d.etNoHp.text?.toString() ?: ""
-
-            if (email.isEmpty() || nama.isEmpty()) {
-                Toast.makeText(requireContext(), "Email dan Nama wajib diisi!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val selPos = jabNames.indexOf(d.spinnerJabatan.text.toString())
-            val idJab = if(selPos != -1) jabIds[selPos] else 0
-            
-            val idRombong = if (d.rbAdmin.isChecked) "" else d.spinnerRombong.text.toString()
             val role = if(d.rbAdmin.isChecked) "Admin" else "Barista"
+            val selJab = jabNames.indexOf(d.spinnerJabatan.text.toString())
 
             val v = ContentValues().apply {
-                put("email", email)
-                put("nama", nama)
-                put("no_hp", noHp)
+                put("email", d.etEmail.text.toString())
+                put("nama", d.etNamaLengkap.text.toString())
+                put("no_hp", d.etNoHp.text.toString())
                 put("posisi", role)
-                put("id_jabatan", idJab)
-                put("id_rombong", idRombong)
+                put("id_jabatan", if(selJab != -1) jabIds[selJab] else 0)
+                put("id_rombong", if(role == "Admin") "" else d.spinnerRombong.text.toString())
             }
+
             if (item == null) db.writableDatabase.insert("karyawan", null, v)
             else db.writableDatabase.update("karyawan", v, "email=?", arrayOf(item.email))
+
             loadData(); dialog.dismiss()
         }
         d.btnClose.setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 
-    inner class KaryawanAdapter(val list: List<Karyawan>) : RecyclerView.Adapter<KaryawanAdapter.VH>() {
-        inner class VH(val b: ItemKaryawanBaristaBinding) : RecyclerView.ViewHolder(b.root)
-        override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(ItemKaryawanBaristaBinding.inflate(LayoutInflater.from(p.context), p, false))
-        override fun onBindViewHolder(h: VH, pos: Int) {
-            val i = list[pos]
-            h.b.tvEmail.text = i.email
-            h.b.tvNama.text = i.nama
-            h.b.tvPosisi.text = i.posisi
-            h.b.btnEdit.setOnClickListener { showKaryawanDialog(i) }
-            h.b.btnHapus.setOnClickListener {
-                db.writableDatabase.delete("karyawan", "email=?", arrayOf(i.email))
-                loadData()
+    inner class KaryawanAdapter(val list: List<Map<String, String>>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        override fun getItemViewType(pos: Int) = if (list[pos]["posisi"] == "Admin") 1 else 2
+
+        override fun onCreateViewHolder(p: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            val inflater = LayoutInflater.from(p.context)
+            return if (viewType == 1) AdminVH(ItemKaryawanAdminBinding.inflate(inflater, p, false))
+            else BaristaVH(ItemKaryawanBaristaBinding.inflate(inflater, p, false))
+        }
+
+        override fun onBindViewHolder(h: RecyclerView.ViewHolder, pos: Int) {
+            val m = list[pos]
+            // Data object untuk dikirim ke dialog edit
+            val obj = Karyawan(m["email"]!!, m["id_jabatan"]!!.toInt(), m["id_rombong"]!!, m["nama"]!!, m["no_hp"]!!, m["posisi"]!!)
+
+            if (h is AdminVH) {
+                h.b.tvEmail.text = m["email"]
+                h.b.tvNama.text = m["nama"]
+                h.b.tvNoHp.text = m["no_hp"]
+                h.b.btnEdit.setOnClickListener { showKaryawanDialog(obj) }
+                h.b.btnHapus.setOnClickListener { hapus(m["email"]!!) }
+            } else if (h is BaristaVH) {
+                h.b.tvEmail.text = m["email"]
+                h.b.tvNama.text = m["nama"]
+                h.b.tvNoHp.text = m["no_hp"]
+                h.b.tvIdRombong.text = m["id_rombong"]
+                h.b.tvCabang.text = m["cabang"]
+                h.b.btnEdit.setOnClickListener { showKaryawanDialog(obj) }
+                h.b.btnHapus.setOnClickListener { hapus(m["email"]!!) }
             }
         }
+
+        private fun hapus(email: String) {
+            AlertDialog.Builder(requireContext()).setTitle("Hapus?").setMessage("Yakin hapus $email?")
+                .setPositiveButton("Ya") { _, _ ->
+                    db.writableDatabase.delete("karyawan", "email=?", arrayOf(email))
+                    loadData()
+                }.setNegativeButton("Batal", null).show()
+        }
+
         override fun getItemCount() = list.size
+        inner class AdminVH(val b: ItemKaryawanAdminBinding) : RecyclerView.ViewHolder(b.root)
+        inner class BaristaVH(val b: ItemKaryawanBaristaBinding) : RecyclerView.ViewHolder(b.root)
     }
 }
-
-// ─── TAB 2: DATA GAJI ──────────────────────────────────────────────────────
+// ─── TAB 2: MANAJEMEN GAJI ─────────────────────────────────────────────────
 
 class TabDataGajiFragment : Fragment() {
     private var _binding: TabDataGajiBinding? = null
     private val binding get() = _binding!!
     private lateinit var db: DBOpenHelper
-    private val listGaji = mutableListOf<DataGaji>()
-    private lateinit var adapter: GajiAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = TabDataGajiBinding.inflate(inflater, container, false)
@@ -271,23 +263,32 @@ class TabDataGajiFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = GajiAdapter(listGaji)
-        binding.rvGaji.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvGaji.adapter = adapter
-
+        binding.rvGaji.layoutManager = LinearLayoutManager(context)
         loadGaji()
         binding.btnTambahGaji.setOnClickListener { showGajiDialog(null) }
     }
 
     private fun loadGaji() {
-        listGaji.clear()
-        val cursor = db.readableDatabase.rawQuery("SELECT g.*, k.nama FROM gaji g JOIN karyawan k ON g.email = k.email", null)
+        val listGaji = mutableListOf<DataGaji>()
+        // Gunakan LEFT JOIN agar data tetap muncul meskipun data karyawan ada yang bermasalah
+        val cursor = db.readableDatabase.rawQuery(
+            "SELECT g.*, IFNULL(k.nama, 'Tanpa Nama') FROM gaji g LEFT JOIN karyawan k ON g.email = k.email",
+            null
+        )
         while (cursor.moveToNext()) {
-            listGaji.add(DataGaji(cursor.getString(0), cursor.getString(7), cursor.getString(2),
-                cursor.getLong(3), cursor.getLong(4), cursor.getLong(5), cursor.getLong(6)))
+            listGaji.add(DataGaji(
+                cursor.getString(0), // idGaji
+                cursor.getString(1), // email
+                cursor.getString(7), // nama (hasil join)
+                cursor.getString(2), // periode
+                cursor.getLong(3),   // gapok
+                cursor.getLong(4),   // bonus
+                cursor.getLong(5),   // kompensasi
+                cursor.getLong(6)    // total
+            ))
         }
         cursor.close()
-        adapter.notifyDataSetChanged()
+        binding.rvGaji.adapter = GajiAdapter(listGaji)
     }
 
     private fun showGajiDialog(item: DataGaji?) {
@@ -296,74 +297,53 @@ class TabDataGajiFragment : Fragment() {
 
         val karEmails = mutableListOf<String>()
         val karNames = mutableListOf<String>()
-        val gajisHarian = mutableListOf<Long>()
-        val bonusCup = mutableListOf<Long>()
+        val gajis = mutableListOf<Long>()
+        val bonuses = mutableListOf<Long>()
 
-        val curK = db.readableDatabase.rawQuery("SELECT k.email, k.nama, j.gaji_pokok_per_hari, j.bonus_percup FROM karyawan k JOIN jabatan j ON k.id_jabatan = j.id_jabatan", null)
-        while(curK.moveToNext()){
-            karEmails.add(curK.getString(0))
-            karNames.add(curK.getString(1))
-            gajisHarian.add(curK.getLong(2))
-            bonusCup.add(curK.getLong(3))
+        val cur = db.readableDatabase.rawQuery("SELECT k.email, k.nama, j.gaji_pokok_per_hari, j.bonus_percup FROM karyawan k JOIN jabatan j ON k.id_jabatan = j.id_jabatan", null)
+        while(cur.moveToNext()){
+            karEmails.add(cur.getString(0)); karNames.add(cur.getString(1))
+            gajis.add(cur.getLong(2)); bonuses.add(cur.getLong(3))
         }
-        curK.close()
+        cur.close()
         d.spinnerKaryawan.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, karNames))
 
-        fun hitungOtomatis() {
-            val sel = karNames.indexOf(d.spinnerKaryawan.text.toString())
-            if(sel == -1) return
+        fun kalkulasi() {
+            val idx = karNames.indexOf(d.spinnerKaryawan.text.toString())
+            if(idx == -1) return
             val hari = d.etHariMasuk.text.toString().toLongOrNull() ?: 0L
             val cup = d.etJumlahCup.text.toString().toLongOrNull() ?: 0L
-            
-            val totalGapok = hari * gajisHarian[sel]
-            val totalBonus = cup * bonusCup[sel]
-            
-            d.etGajiPokok.setText(totalGapok.toString())
-            d.etTotalBonus.setText(totalBonus.toString())
+            d.etGajiPokok.setText((hari * gajis[idx]).toString())
+            d.etTotalBonus.setText((cup * bonuses[idx]).toString())
         }
 
-        d.spinnerKaryawan.setOnItemClickListener { _, _, _, _ -> hitungOtomatis() }
-        
-        // Listener manual jika user input angka
-        val watcher = object : android.text.TextWatcher {
+        d.spinnerKaryawan.setOnItemClickListener { _, _, _, _ -> kalkulasi() }
+        val watcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { kalkulasi() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { hitungOtomatis() }
-            override fun afterTextChanged(s: android.text.Editable?) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
         d.etHariMasuk.addTextChangedListener(watcher)
         d.etJumlahCup.addTextChangedListener(watcher)
 
-        item?.let {
-            d.spinnerKaryawan.setText(it.nama, false)
-            d.etPeriode.setText(it.periode)
-            d.etGajiPokok.setText(it.gajiPokok.toString())
-            d.etTotalBonus.setText(it.bonus.toString())
-            d.etKompensasi.setText(it.kompensasi.toString())
-        }
-
         d.btnSimpan.setOnClickListener {
-            val sel = karNames.indexOf(d.spinnerKaryawan.text.toString())
-            if(sel == -1) {
-                Toast.makeText(requireContext(), "Pilih Karyawan!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            val idx = karNames.indexOf(d.spinnerKaryawan.text.toString())
+            if(idx == -1) return@setOnClickListener
 
             val gapok = d.etGajiPokok.text.toString().toLongOrNull() ?: 0L
             val bonus = d.etTotalBonus.text.toString().toLongOrNull() ?: 0L
             val kompen = d.etKompensasi.text.toString().toLongOrNull() ?: 0L
-            val total = gapok + bonus + kompen
 
             val v = ContentValues().apply {
-                put("email", karEmails[sel])
+                put("email", karEmails[idx])
                 put("periode", d.etPeriode.text.toString())
                 put("total_gaji_pokok", gapok)
                 put("total_bonus", bonus)
                 put("total_kompensasi", kompen)
-                put("total_gaji_akhir", total)
+                put("total_gaji_akhir", gapok + bonus + kompen)
             }
             if(item == null) {
-                val idGaji = "G" + System.currentTimeMillis().toString().takeLast(5)
-                v.put("id_gaji", idGaji)
+                v.put("id_gaji", "G" + System.currentTimeMillis().toString().takeLast(5))
                 db.writableDatabase.insert("gaji", null, v)
             } else {
                 db.writableDatabase.update("gaji", v, "id_gaji=?", arrayOf(item.idGaji))
@@ -381,16 +361,8 @@ class TabDataGajiFragment : Fragment() {
             val i = list[pos]
             h.b.tvNo.text = (pos + 1).toString()
             h.b.tvNama.text = i.nama
-            h.b.tvPeriode.text = i.periode
-            h.b.tvGajiPokok.text = "Rp ${i.gajiPokok}"
-            h.b.tvBonus.text = "Rp ${i.bonus}"
-            h.b.tvKompensasi.text = "Rp ${i.kompensasi}"
             h.b.tvTotalGaji.text = "Rp ${i.total}"
-            h.b.btnEdit.setOnClickListener { showGajiDialog(i) }
-            h.b.btnHapus.setOnClickListener {
-                db.writableDatabase.delete("gaji", "id_gaji=?", arrayOf(i.idGaji))
-                loadGaji()
-            }
+            h.b.btnHapus.setOnClickListener { db.writableDatabase.delete("gaji", "id_gaji=?", arrayOf(i.idGaji)); loadGaji() }
         }
         override fun getItemCount() = list.size
     }
@@ -398,12 +370,12 @@ class TabDataGajiFragment : Fragment() {
 
 // ─── TAB 3: JADWAL SHIFT ───────────────────────────────────────────────────
 
+// ... (imports lainnya tetap sama)
+
 class TabJadwalShiftFragment : Fragment() {
     private var _binding: TabJadwalShiftBinding? = null
     private val binding get() = _binding!!
     private lateinit var db: DBOpenHelper
-    private val listShift = mutableListOf<JadwalShift>()
-    private lateinit var adapter: ShiftAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = TabJadwalShiftBinding.inflate(inflater, container, false)
@@ -413,138 +385,139 @@ class TabJadwalShiftFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = ShiftAdapter(listShift)
-        binding.rvJadwal.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvJadwal.adapter = adapter
-        
-        loadShift()
+        binding.rvJadwal.layoutManager = LinearLayoutManager(context)
+        loadData()
         binding.btnBuatJadwal.setOnClickListener { showShiftDialog(null) }
     }
 
-    private fun loadShift() {
-        listShift.clear()
-        val q = "SELECT s.*, k.nama FROM jadwal_shift s JOIN karyawan k ON s.email = k.email"
-        val cursor = db.readableDatabase.rawQuery(q, null)
-        while (cursor.moveToNext()) {
-            listShift.add(JadwalShift(cursor.getInt(0), cursor.getString(1), cursor.getString(5),
-                cursor.getString(2), cursor.getString(3), cursor.getString(4)))
+    private fun loadData() {
+        val list = mutableListOf<JadwalShift>()
+        // Query disesuaikan dengan DB_Ver 5 (ada kolom lokasi)
+        val cur = db.readableDatabase.rawQuery(
+            "SELECT s.id_jadwal, s.email, k.nama, s.tanggal, s.jam_mulai, s.jam_selesai, s.lokasi " +
+                    "FROM jadwal_shift s JOIN karyawan k ON s.email = k.email", null
+        )
+
+        while (cur.moveToNext()) {
+            list.add(JadwalShift(
+                cur.getInt(0),
+                cur.getString(1),
+                cur.getString(2), // nama
+                cur.getString(3), // tanggal
+                cur.getString(4), // jam_mulai
+                cur.getString(5), // jam_selesai
+                cur.getString(6)  // lokasi
+            ))
         }
-        cursor.close()
-        adapter.notifyDataSetChanged()
+        cur.close()
+        binding.rvJadwal.adapter = JadwalAdapter(list)
     }
 
     private fun showShiftDialog(item: JadwalShift?) {
         val d = DialogBuatJadwalBinding.inflate(layoutInflater)
-        val dialog = AlertDialog.Builder(requireContext()).setView(d.root).create()
-        
-        // 1. List Karyawan untuk Spinner
-        val karNames = mutableListOf<String>()
-        val karEmails = mutableListOf<String>()
-        val curK = db.readableDatabase.rawQuery("SELECT email, nama FROM karyawan", null)
-        while(curK.moveToNext()){
-            karEmails.add(curK.getString(0))
-            karNames.add(curK.getString(1))
-        }
-        curK.close()
-        d.spinnerKaryawan.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, karNames))
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(d.root)
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        // 2. List Lokasi Cabang
+        // 1. SETUP KARYAWAN
+        val names = mutableListOf<String>(); val emails = mutableListOf<String>()
+        val curK = db.readableDatabase.rawQuery("SELECT email, nama FROM karyawan", null)
+        while(curK.moveToNext()){ emails.add(curK.getString(0)); names.add(curK.getString(1)) }
+        curK.close()
+        d.spinnerKaryawan.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, names))
+
+        // 2. SETUP LOKASI
         val cabNames = mutableListOf<String>()
         val curC = db.readableDatabase.rawQuery("SELECT nama_lokasi FROM cabang", null)
-        while(curC.moveToNext()) cabNames.add(curC.getString(0))
+        while(curC.moveToNext()){ cabNames.add(curC.getString(0)) }
         curC.close()
         d.spinnerLokasi.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, cabNames))
 
-        // 3. Date Picker untuk Tanggal
+        // 3. DATE & TIME PICKER
         d.etTanggal.setOnClickListener {
-            val cal = Calendar.getInstance()
+            val c = Calendar.getInstance()
             DatePickerDialog(requireContext(), { _, y, m, day ->
-                val dateStr = String.format("%d-%02d-%02d", y, m + 1, day)
-                d.etTanggal.setText(dateStr)
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+                d.etTanggal.setText(String.format("%d-%02d-%02d", y, m + 1, day))
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        // 4. Time Picker untuk Jam
-        fun showTimePicker(et: com.google.android.material.textfield.TextInputEditText) {
-            val cal = Calendar.getInstance()
-            TimePickerDialog(requireContext(), { _, h, min ->
-                et.setText(String.format("%02d:%02d", h, min))
-            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+        d.etJamMulai.setOnClickListener {
+            val c = Calendar.getInstance()
+            TimePickerDialog(requireContext(), { _, h, m ->
+                d.etJamMulai.setText(String.format("%02d:%02d", h, m))
+            }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show()
         }
-        d.etJamMulai.setOnClickListener { showTimePicker(d.etJamMulai) }
-        d.etJamSelesai.setOnClickListener { showTimePicker(d.etJamSelesai) }
 
+        d.etJamSelesai.setOnClickListener {
+            val c = Calendar.getInstance()
+            TimePickerDialog(requireContext(), { _, h, m ->
+                d.etJamSelesai.setText(String.format("%02d:%02d", h, m))
+            }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show()
+        }
+
+        // EDIT MODE
         item?.let {
             d.spinnerKaryawan.setText(it.nama, false)
+            d.spinnerLokasi.setText(it.lokasi, false)
             d.etTanggal.setText(it.tanggal)
             d.etJamMulai.setText(it.jamMulai)
             d.etJamSelesai.setText(it.jamSelesai)
-            
-            // Cari lokasi berdasarkan rombong karyawan (opsional, jika ingin auto-fill lokasi)
-            val curL = db.readableDatabase.rawQuery(
-                "SELECT c.nama_lokasi FROM karyawan k JOIN rombong r ON k.id_rombong = r.id_rombong JOIN cabang c ON r.id_cabang = c.id_cabang WHERE k.email = ?", 
-                arrayOf(it.email)
-            )
-            if(curL.moveToFirst()) d.spinnerLokasi.setText(curL.getString(0), false)
-            curL.close()
-        } ?: run {
-            if(karNames.isNotEmpty()) d.spinnerKaryawan.setText(karNames[0], false)
-            if(cabNames.isNotEmpty()) d.spinnerLokasi.setText(cabNames[0], false)
         }
 
         d.btnSimpan.setOnClickListener {
-            val selPos = karNames.indexOf(d.spinnerKaryawan.text.toString())
-            if(selPos == -1) {
-                Toast.makeText(context, "Pilih karyawan!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            val selIdx = names.indexOf(d.spinnerKaryawan.text.toString())
+            val lokasi = d.spinnerLokasi.text.toString()
 
-            if(d.etTanggal.text.isNullOrEmpty()){
-                Toast.makeText(context, "Pilih tanggal!", Toast.LENGTH_SHORT).show()
+            if (selIdx == -1 || lokasi.isEmpty() || d.etTanggal.text.toString().isEmpty()) {
+                Toast.makeText(context, "Harap lengkapi data!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val v = ContentValues().apply {
-                put("email", karEmails[selPos])
+                put("email", emails[selIdx])
+                put("lokasi", lokasi)
                 put("tanggal", d.etTanggal.text.toString())
                 put("jam_mulai", d.etJamMulai.text.toString())
                 put("jam_selesai", d.etJamSelesai.text.toString())
             }
-            if (item == null) db.writableDatabase.insert("jadwal_shift", null, v)
-            else db.writableDatabase.update("jadwal_shift", v, "id_jadwal=?", arrayOf(item.idJadwal.toString()))
-            loadShift(); dialog.dismiss()
+
+            try {
+                if (item == null) db.writableDatabase.insert("jadwal_shift", null, v)
+                else db.writableDatabase.update("jadwal_shift", v, "id_jadwal=?", arrayOf(item.idJadwal.toString()))
+                loadData()
+                dialog.dismiss()
+            } catch (e: Exception) {
+                Toast.makeText(context, "Gagal simpan: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
         d.btnClose.setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 
-    inner class ShiftAdapter(val list: List<JadwalShift>) : RecyclerView.Adapter<ShiftAdapter.VH>() {
+    inner class JadwalAdapter(val list: List<JadwalShift>) : RecyclerView.Adapter<JadwalAdapter.VH>() {
         inner class VH(val b: ItemJadwalBinding) : RecyclerView.ViewHolder(b.root)
         override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(ItemJadwalBinding.inflate(LayoutInflater.from(p.context), p, false))
         override fun onBindViewHolder(h: VH, pos: Int) {
             val i = list[pos]
-            h.b.tvIdJadwal.text = i.idJadwal.toString()
-            h.b.tvKaryawan.text = i.nama
+            h.b.tvNama.text = i.nama
+            h.b.tvLokasi.text = i.lokasi // Pastikan tvLokasi ada di item_jadwal.xml
             h.b.tvTanggal.text = i.tanggal
             h.b.tvJam.text = "${i.jamMulai} - ${i.jamSelesai}"
             h.b.btnEdit.setOnClickListener { showShiftDialog(i) }
             h.b.btnHapus.setOnClickListener {
                 db.writableDatabase.delete("jadwal_shift", "id_jadwal=?", arrayOf(i.idJadwal.toString()))
-                loadShift()
+                loadData()
             }
         }
         override fun getItemCount() = list.size
     }
 }
-
-// ─── TAB 4: JABATAN ────────────────────────────────────────────────────────
+// ─── TAB 4: MANAJEMEN JABATAN ──────────────────────────────────────────────
 
 class TabJabatanFragment : Fragment() {
     private var _binding: TabJabatanBinding? = null
     private val binding get() = _binding!!
     private lateinit var db: DBOpenHelper
-    private val listJabatan = mutableListOf<Jabatan>()
-    private lateinit var adapter: JabatanAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = TabJabatanBinding.inflate(inflater, container, false)
@@ -554,27 +527,24 @@ class TabJabatanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = JabatanAdapter(listJabatan)
         binding.rvJabatan.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvJabatan.adapter = adapter
-
         loadJabatan()
         binding.btnTambahJabatan.setOnClickListener { showJabatanDialog(null) }
     }
 
     private fun loadJabatan() {
-        listJabatan.clear()
-        val cursor = db.readableDatabase.rawQuery("SELECT * FROM jabatan", null)
-        while (cursor.moveToNext()) {
-            listJabatan.add(Jabatan(cursor.getInt(0), cursor.getString(1), cursor.getLong(2), cursor.getLong(3)))
+        val listJabatan = mutableListOf<Jabatan>()
+        val cur = db.readableDatabase.rawQuery("SELECT * FROM jabatan", null)
+        while(cur.moveToNext()) {
+            listJabatan.add(Jabatan(cur.getInt(0), cur.getString(1), cur.getLong(2), cur.getLong(3)))
         }
-        cursor.close()
-        adapter.notifyDataSetChanged()
+        cur.close()
+        binding.rvJabatan.adapter = JabatanAdapter(listJabatan)
     }
 
     private fun showJabatanDialog(item: Jabatan?) {
-        val dialog = Dialog(requireContext())
         val d = DialogKelolaJabatanBinding.inflate(layoutInflater)
+        val dialog = Dialog(requireContext())
         dialog.setContentView(d.root)
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 

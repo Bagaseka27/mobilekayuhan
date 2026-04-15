@@ -58,6 +58,7 @@ class DBOpenHelper(context: Context) :
         val tJadwal = "create table jadwal_shift(" +
                 "id_jadwal integer primary key autoincrement, " +
                 "email text not null, " +
+                "lokasi text not null, " +
                 "tanggal text not null, " +
                 "jam_mulai text not null, " +
                 "jam_selesai text not null, " +
@@ -106,6 +107,6 @@ class DBOpenHelper(context: Context) :
     }
     companion object {
         val DB_Name = "kayuhanmobile"
-        val DB_Ver = 4 // Update version
+        val DB_Ver = 5// Update version
     }
 }

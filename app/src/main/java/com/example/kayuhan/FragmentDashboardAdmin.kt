@@ -78,6 +78,6 @@ class FragmentDashboardAdmin : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        vb = null // Penting untuk mencegah memory leak
+        vb = null
     }
 }
