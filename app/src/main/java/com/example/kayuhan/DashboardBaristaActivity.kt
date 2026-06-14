@@ -55,9 +55,10 @@ class DashboardBaristaActivity : AppCompatActivity(), NavigationView.OnNavigatio
                 // Tetap di halaman ini atau load fragment dashboard
             }
             R.id.nav_kasir -> {
-                // Contoh perpindahan ke activity Kasir/POS
-                // startActivity(Intent(this, KasirActivity::class.java))
-                Toast.makeText(this, "Membuka Kasir (POS)", Toast.LENGTH_SHORT).show()
+                val emailLogin = intent.getStringExtra("EXTRA_EMAIL")
+                val intent = Intent(this, KasirActivity::class.java)
+                intent.putExtra("EXTRA_EMAIL", emailLogin)
+                startActivity(intent)
             }
             R.id.nav_menu -> {
                 Toast.makeText(this, "Membuka Daftar Menu", Toast.LENGTH_SHORT).show()

@@ -45,6 +45,8 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="false" />
 
+        <activity android:name=".KasirActivity" />
+
         <!-- MainActivity tidak lagi menjadi launcher -->
         <activity
             android:name=".MainActivity"
