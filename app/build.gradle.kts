@@ -39,12 +39,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    //menampilkan komponen list
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    //volley untuk request HTTP/API
-    implementation("com.android.volley:volley:1.2.1")
-    //picasso untuk load gambar dari URL
-    implementation("com.squareup.picasso:picasso:2.71828")
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
