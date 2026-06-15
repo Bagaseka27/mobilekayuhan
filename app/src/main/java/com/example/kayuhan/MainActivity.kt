@@ -22,20 +22,18 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = MainPagerAdapter(this)
         binding.viewPagerMain.adapter = adapter
-        
-        // Agar ViewPager berpindah saat BottomNav diklik
+
         binding.bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.itemBeranda -> binding.viewPagerMain.currentItem = 0
-                R.id.itemTransaksi -> binding.viewPagerMain.currentItem = 1
-                R.id.itemKaryawan -> binding.viewPagerMain.currentItem = 2
-                R.id.itemMenu -> binding.viewPagerMain.currentItem = 3
-                R.id.itemLokasi -> binding.viewPagerMain.currentItem = 4
+                R.id.itemKaryawan -> binding.viewPagerMain.currentItem = 1
+                R.id.itemMenu -> binding.viewPagerMain.currentItem = 2
+                R.id.itemLokasi -> binding.viewPagerMain.currentItem = 3
+                R.id.itemTransaksi -> binding.viewPagerMain.currentItem = 4
             }
             true
         }
 
-        // Agar BottomNav berpindah saat ViewPager di-slide
         binding.viewPagerMain.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 binding.bottomNavigationView.menu.getItem(position).isChecked = true
@@ -49,13 +47,14 @@ class MainActivity : AppCompatActivity() {
 
     inner class MainPagerAdapter(fa: AppCompatActivity) : FragmentStateAdapter(fa) {
         override fun getItemCount(): Int = 5
+
         override fun createFragment(position: Int): Fragment {
             return when (position) {
                 0 -> FragmentDashboardAdmin()
-                1 -> FragmentTransaksi()
-                2 -> FragmentKaryawan()
-                3 -> FragmentMenu()
-                4 -> FragmentLokasi()
+                1 -> FragmentKaryawan()
+                2 -> FragmentMenu()
+                3 -> FragmentLokasi()
+                4 -> FragmentTransaksi()
                 else -> FragmentDashboardAdmin()
             }
         }
