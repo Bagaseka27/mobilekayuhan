@@ -31,7 +31,7 @@ class FragmentMenu : Fragment() {
     private var _binding: ActivityFragmentMenuBinding? = null
     private val binding get() = _binding!!
 
-    private val URL_ROOT = "http://192.168.1.31/php-mobile-kayuhan"
+    private val URL_ROOT = "http://192.168.0.32/php-mobile-kayuhan"
     private val URL_MENU = "$URL_ROOT/menu_action.php"
     private val URL_IMAGE_FOLDER = "$URL_ROOT/images/"
 

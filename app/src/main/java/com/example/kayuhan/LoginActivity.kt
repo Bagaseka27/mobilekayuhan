@@ -20,7 +20,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etPassword: EditText
     private lateinit var btnLogin: Button
 
-    private val urlLogin = "http://10.187.224.115/kayuhanmobile/login.php"
+    private val urlLogin = "http://192.168.0.32/kayuhanmobile/login.php"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
